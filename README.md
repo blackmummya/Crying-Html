@@ -1,4 +1,4 @@
-# Crying-Html
+# Crying-Html.
 Status: "Development"
 ## About The Crying-Html Project.
 This script is a small project used for bug hunting, so far what I have put some simple things such as, 
@@ -10,7 +10,9 @@ Find the IP of the website
 
 But I will add other features in the future.
 
-### Download For Kalilinux
+### Download For Kali linux.
 git clone https://github.com/blackmummya/Crying-Html.git
+
 cd Crying-Html-main
+
 python3 Crying_HTML.py
