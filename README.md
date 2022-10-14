@@ -9,3 +9,7 @@ Find all the subdomains of the website.
 Find the IP of the website
 
 But I will add other features in the future.
+###Download For Kalilinux
+git clone https://github.com/blackmummya/Crying-Html.git
+cd Crying-Html-main
+python3 Crying_HTML.py
