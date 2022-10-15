@@ -7,6 +7,7 @@ This script is a small project used for bug hunting, so far what I have put some
 * Find all the links in the website.
 * Find all the subdomains of the website.
 * Find the IP of the website.
+* Using Nmap To Scan Vulnerability.
 
 But I will add other features in the future.
 
@@ -14,7 +15,7 @@ But I will add other features in the future.
 ```
 git clone https://github.com/blackmummya/Crying-Html.git
 
-cd Crying-Html-main
+cd Crying-Html
 
 python3 Crying_HTML.py
 ```
