@@ -17,5 +17,7 @@ git clone https://github.com/blackmummya/Crying-Html.git
 
 cd Crying-Html
 
+python3 setup.py
+
 python3 Crying_HTML.py
 ```
