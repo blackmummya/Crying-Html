@@ -1,13 +1,5 @@
 from colors import colors as c
-
-
-__author__ = 'Black_Mummya'
-__version__ = '0.1'
-__email__ = 'blackmummya@gmail.com'
-__status__ = 'Development'
-__codename__ = 'Html_Crying'
-__source__ = 'https://github.com/blackmummya'
-__info__ = 'use for feild bug bounty and penetration testing'.title()
+from pyfiglet import figlet_format
 
 
 def banner():
@@ -50,7 +42,30 @@ def banner():
           f'╱{c.RESET}┃╭━╮┃')
     print(f'╰━━━┻━━━┻╯{c.ANIMATION + c.RED}╱{c.RESET}╰┻━━━┻╯╰━╯ ╰╯╰╯╰┻━━━┻╯╰╯╰┻╯╰╯╰╯{c.ANIMATION + c.RED}'
           f'╱{c.RESET}╰╯{c.ANIMATION + c.RED}╱{c.RESET}╰╯{c.ANIMATION + c.RED}╱{c.RESET}╰╯')
-    print(c.CYAN + f'name: {__codename__}\n'
-                   f'use: {__info__}\n'
-                   f'author: {__author__}\n'
-                   f'source: {__source__}\n')
+
+
+def version():
+    __author__ = 'Black_Mummya'
+    __version__ = '0.4v'
+    __email__ = 'blackmummya@gmail.com'
+    __status__ = 'Development'
+    __codename__ = 'Html_Crying'
+    __source__ = 'https://github.com/blackmummya'
+    __info__ = 'use for field bug bounty and penetration testing'.title()
+
+    print(c.CYAN + f'Name: {__codename__}\n'
+                   f'Use: {__info__}\n'
+                   f'Author: {__author__}\n'
+                   f'Source: {__source__}\n')
+
+
+def gi():
+    logo_gi = """
+
+░██████╗░░█████╗░████████╗██╗░░██╗███████╗██████╗░  ██╗███╗░░██╗███████╗░█████╗░
+██╔════╝░██╔══██╗╚══██╔══╝██║░░██║██╔════╝██╔══██╗  ██║████╗░██║██╔════╝██╔══██╗
+██║░░██╗░███████║░░░██║░░░███████║█████╗░░██████╔╝  ██║██╔██╗██║█████╗░░██║░░██║
+██║░░╚██╗██╔══██║░░░██║░░░██╔══██║██╔══╝░░██╔══██╗  ██║██║╚████║██╔══╝░░██║░░██║
+╚██████╔╝██║░░██║░░░██║░░░██║░░██║███████╗██║░░██║  ██║██║░╚███║██║░░░░░╚█████╔╝
+░╚═════╝░╚═╝░░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝  ╚═╝╚═╝░░╚══╝╚═╝░░░░░░╚════╝░
+    """
