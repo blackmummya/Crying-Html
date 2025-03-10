@@ -1,21 +1,73 @@
-try:
-    from subprocess import check_output
-    from colors import colors as c
-    from colorama import Fore
-    from banner import banner
-    from time import sleep
-    from os import system
-    from sys import exit
-    from json import dump, load
-    import re
-except Exception as Err:
-    exit(c.RED + '[' + c.YELLOW + c.ANIMATION + '!' + c.RESET + c.RED + ']' + f' {Err}.' + c.RESET)
+#!/usr/bin/env python3
+import re
+import sys
+import subprocess
+from os import system
+from colors import colors as c
+from colorama import Fore
+from banner import banner
+from time import sleep
 
-
-def nmap(url):
+def clear_screen() -> None:
+    """Clears the terminal screen."""
     system('clear')
-    banner = """
 
+def get_domain(url: str) -> str:
+    """
+    Extracts the domain from a URL.
+    
+    Returns the domain part after 'https://' or 'http://'.
+    """
+    match = re.search(r'https?://([^/]+)', url)
+    if match:
+        return match.group(1).strip()
+    else:
+        # Fallback: if the URL doesn't start with a scheme, assume the full string is the domain.
+        return url.strip()
+
+def lookup_ip(domain: str) -> str:
+    """
+    Uses nslookup to find the IP address of a given domain.
+    
+    Returns the second IP found (if available), or the first one.
+    Exits if no valid IP is found.
+    """
+    try:
+        # Run nslookup command without shell=True for safety.
+        output = subprocess.check_output(['nslookup', domain]).decode()
+        # Find all IP addresses in the output.
+        matches = re.findall(r'Address:\s*([\d.]+)', output)
+        if not matches:
+            raise ValueError("No IP address found for domain: " + domain)
+        # Use the second IP if available; otherwise, use the first.
+        return matches[1].strip() if len(matches) > 1 else matches[0].strip()
+    except Exception as e:
+        print(c.RED + f"Error during nslookup for '{domain}': {e}" + c.RESET)
+        sys.exit(1)
+
+def prompt_timing() -> int:
+    """
+    Prompts the user to enter a timing template between 0 and 5.
+    
+    Exits if input is invalid.
+    """
+    try:
+        timing = int(input(c.YELLOW + c.ANIMATION + '\n[+]' + c.RESET + c.CYAN +
+                             ' Set timing template between 0-5 (higher is faster): '.title()))
+        if timing < 0 or timing > 5:
+            raise ValueError("Timing value must be between 0 and 5")
+        return timing
+    except ValueError as ve:
+        print(c.RED + f"[{c.YELLOW}{c.ANIMATION}{c.RESET}{c.RED}] Invalid input: {ve}" + c.RESET)
+        sys.exit(1)
+
+def run_nmap_scan(url: str) -> None:
+    """
+    Clears the screen, displays a banner, prompts for timing,
+    extracts the IP address via nslookup, and runs an nmap scan.
+    """
+    clear_screen()
+    ascii_banner = """
 ███╗░░██╗███╗░░░███╗░█████╗░██████╗░
 ████╗░██║████╗░████║██╔══██╗██╔══██╗
 ██╔██╗██║██╔████╔██║███████║██████╔╝
@@ -23,35 +75,33 @@ def nmap(url):
 ██║░╚███║██║░╚═╝░██║██║░░██║██║░░░░░
 ╚═╝░░╚══╝╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝░░░░░
 """
-    print(banner)
-    try:
-        set_timing = int(input(c.YELLOW + c.ANIMATION + '\n[+]' + c.RESET + c.CYAN +
-                               ' Set timing template between 0-5 (higher is faster): '.title()))
-        if 5 < set_timing < 0:
-            system('clear')
-            exit(c.RED + '[' + c.YELLOW + c.ANIMATION + '!' + c.RESET + c.RED + ']' + 'invalid time'.title())
-        regular_curl = re.findall(r'(?:https://)(.*)', url)[0]
-        get_ip = check_output([f'nslookup {regular_curl.strip("/")}'], shell=True)
-        regex = re.findall(r'(?:Address:)(.*)', get_ip.decode())
-        system('clear')
-        print(banner)
-        print(
-            c.GREEN + '\n[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'vulnerability scanner for this ip' + c.YELLOW + f'{regex[1]}' + c.GREEN + ' default choose:\n\n'.title() +
-            c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'Enable OS detection, version detection, script scanning, and traceroute.\n'.title() +
-            c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'Fast mode - Scan fewer ports than the default scan.\n'.title() +
-            c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + f'Set timing template {set_timing}.\n'.title() +
-            c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'Increase verbosity level.\n\n\n' + Fore.RESET.title() + c.RESET)
-        system(f'nmap -A -F -T{set_timing} {regex[1]} -v')
+    print(ascii_banner)
+    timing = prompt_timing()
+    
+    domain = get_domain(url)
+    ip_address = lookup_ip(domain)
+    
+    clear_screen()
+    print(ascii_banner)
+    info = (
+        f"\n[{c.WHITE}+{c.GREEN}] {c.CYAN}Vulnerability scanner for this IP: {c.YELLOW}{ip_address}{c.GREEN} default choose:\n\n"
+        f"[{c.WHITE}+{c.GREEN}] {c.CYAN}Enable OS detection, version detection, script scanning, and traceroute.\n"
+        f"[{c.WHITE}+{c.GREEN}] {c.CYAN}Fast mode - Scan fewer ports than the default scan.\n"
+        f"[{c.WHITE}+{c.GREEN}] {c.CYAN}Set timing template {timing}.\n"
+        f"[{c.WHITE}+{c.GREEN}] {c.CYAN}Increase verbosity level.\n\n\n{Fore.RESET}{c.RESET}"
+    )
+    print(info)
+    
+    # Run the nmap command with provided timing and target IP.
+    system(f"nmap -A -F -T{timing} {ip_address} -v")
 
-    except KeyboardInterrupt:
-        exit(c.YELLOW + '\nBye')
-    except ValueError:
-        exit(c.RED + '[' + c.YELLOW + c.ANIMATION + '!' + c.RESET + c.RED + ']' + 'invalid input'.title())
-
-
-def shodan(cl):
-    system('clear')
-    banner = """
+def run_shodan_scan(url: str) -> None:
+    """
+    Clears the screen, displays a banner, extracts the IP via nslookup,
+    runs a Shodan scan, and prints key output such as hostnames, open ports, and vulnerabilities.
+    """
+    clear_screen()
+    ascii_banner = """
 ░██████╗██╗░░██╗░█████╗░██████╗░░█████╗░███╗░░██╗
 ██╔════╝██║░░██║██╔══██╗██╔══██╗██╔══██╗████╗░██║
 ╚█████╗░███████║██║░░██║██║░░██║███████║██╔██╗██║
@@ -59,20 +109,33 @@ def shodan(cl):
 ██████╔╝██║░░██║╚█████╔╝██████╔╝██║░░██║██║░╚███║
 ╚═════╝░╚═╝░░╚═╝░╚════╝░╚═════╝░╚═╝░░╚═╝╚═╝░░╚══╝
 """
-    print(banner)
-    regular_curl = re.findall(r'(?:https://)(.*)', cl)[0]
-    get_ip = check_output([f'nslookup {regular_curl.strip("/")}'], shell=True)
-    pythex = re.findall(r'(?:Address:)(.*)', get_ip.decode())
-    res = check_output(f'shodan host {pythex[1]}', shell=True).decode()
-    _host_name_ = re.findall(r'(?:Hostnames:)(.*)', res)[0]
-    _n_ports_ = re.findall(r'(?:Number of open ports:)(.*)', res)[0]
-    _o_ports_ = re.findall(r'(?:Ports:)(\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*\s.*)', res)[0]
-    print(
-        c.GREEN + '\n[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'HostName:' + c.YELLOW + f" {_host_name_.lstrip()}\n" +
-        c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'Number of open ports:' + c.YELLOW + f" {_n_ports_.lstrip()}\n" +
-        c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'Ports:' + c.YELLOW + f"{_o_ports_.lstrip()}")
+    print(ascii_banner)
+    domain = get_domain(url)
+    ip_address = lookup_ip(domain)
+    
     try:
-        _vul_ = re.findall(r'(?:Vulnerabilities: )(.*\s.*)', res)[0]
-        print(c.GREEN + '[' + c.WHITE + '+' + c.GREEN + ']' + c.CYAN + 'Vulnerability:' + c.RED + f"\n{_vul_.lstrip()}")
-    except IndexError:
-        pass
+        # Run shodan command.
+        res = subprocess.check_output(f"shodan host {ip_address}", shell=True).decode()
+    except Exception as e:
+        print(c.RED + f"Error running Shodan command: {e}" + c.RESET)
+        sys.exit(1)
+    
+    # Extract fields using regular expressions.
+    host_name = re.search(r'Hostnames:\s*(.*)', res)
+    n_ports = re.search(r'Number of open ports:\s*(.*)', res)
+    ports = re.search(r'Ports:\s*(.*)', res)
+    
+    host_name_str = host_name.group(1).strip() if host_name else "N/A"
+    n_ports_str = n_ports.group(1).strip() if n_ports else "N/A"
+    ports_str = ports.group(1).strip() if ports else "N/A"
+    
+    print(
+        f"\n[{c.WHITE}+{c.GREEN}] {c.CYAN}HostName: {c.YELLOW}{host_name_str}\n"
+        f"[{c.WHITE}+{c.GREEN}] {c.CYAN}Number of open ports: {c.YELLOW}{n_ports_str}\n"
+        f"[{c.WHITE}+{c.GREEN}] {c.CYAN}Ports: {c.YELLOW}{ports_str}"
+    )
+    
+    # Optionally print vulnerabilities if available.
+    vul_match = re.search(r'Vulnerabilities:\s*(.*)', res)
+    if vul_match:
+        print(f"\n[{c.WHITE}+{c.GREEN}] {c.CYAN}Vulnerability: {c.RED}{vul_match.group(1).strip()}")
